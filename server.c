@@ -26,14 +26,22 @@ typedef struct msg {
 
 int main()
 {
-  int fd_server_IN, fd_client_IN;
+  int fd_server_IN, fd_client_recv, fd_client_send, msg_size;;
   int fork_ret = 1;
+  int clientpid;
+  string tostring;
   char buf[MAX_BUF];
-  char * server_IN_fifo = "./server_IN_fifo";
-  char * client_IN_fifo = "./client_IN_fifo";
+  char * server_IN_fifo = "./server_np";
+  char client_send_fifo[100];
+  char client_recieve_fifo[100];
+  string client_recv_fifo_s;
+  string client_send_fifo_s;
+  msg_t msg;
+
+
+  mkfifo(server_IN_fifo, 0666);
 
     /* open, read, and display the message from the FIFO */
-
     while(1)
     {
         fd_server_IN = open(server_IN_fifo, O_RDONLY);
@@ -42,19 +50,29 @@ int main()
         while(read(fd_server_IN, buf, MAX_BUF)>0)
         {
             printf("Received: %s\n", buf);
+            clientpid = atoi(buf);
             fork_ret = fork();
-
+            close(fd_server_IN);
         }
 
-        if(fork_ret == 0)
-        while(read(fd_server_IN, buf, MAX_BUF)>0)
-        {
-            printf("child server, Received: %s\n", buf);
+        if(fork_ret == 0){
+          cout<<endl<<clientpid;
 
-        }
-
-
-        close(fd_server_IN);
+          tostring = to_string(clientpid);
+          client_recv_fifo_s = "./" + tostring + "_recieve";
+          client_send_fifo_s = "./" + tostring + "_send";
+          strcpy(client_send_fifo, client_send_fifo_s.c_str());
+          mkfifo(client_send_fifo, 0666);
+          fd_client_send = open(client_send_fifo, O_RDONLY);
+          while(read(fd_client_send, &msg_size, 4)>0){
+            msg_size = msg_size;
+          }
+          while(read(fd_client_send, &msg, msg_size)>0){
+            cout<<endl<<"server child: ";
+            cout<<endl<<"message: "<<msg.message_text;
+            cout<<endl<<"tpye: "<<msg.type;
+          }
+      }
     }
 
     // fd_client_IN = open(client_IN_fifo, O_WRONLY);
@@ -65,7 +83,7 @@ int main()
 
 
     /* remove the FIFO */
-    unlink(client_IN_fifo);
+    //unlink(client_IN_fifo);
     unlink(server_IN_fifo);
 
     return 0;
