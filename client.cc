@@ -49,8 +49,9 @@ int main()
     char client_send_fifo[100];
     char client_recv_fifo[100];
     //char arrays to check if inputs are valid, will be tested against later
-    char c_send[6] = {'s','e','n','d',':','\0'};
-    char c_exit[5] = {'e','x','i','t','\0'};
+    char c_exit  [5] = {'e','x','i','t','\0'};
+    char c_time  [5] = {'t','i','m','e','\0'};
+    char c_send  [6] = {'s','e','n','d',':','\0'};
     char c_status[7] = {'s','t','a','t','u','s','\0'};
     strcpy(client_send_fifo,server_IN_fifo_s.c_str());
     strcpy(client_recv_fifo,client_IN_fifo_s.c_str());
@@ -81,9 +82,10 @@ int main()
     temp_s[n] = '\0';
 
     //checking to see if it's a send case
-    if(n == 5){
+    if(n > 6){
         if(temp_s[0] == c_send[0] && temp_s[1] == c_send[1] && temp_s[2] == c_send[2] &&
-        temp_s[3] == c_send[3] && temp_s[4] == c_send[4] && temp_s[5] == c_send[5]){
+        temp_s[3] == c_send[3] && temp_s[4] == c_send[4]){
+          cout<<"send condition!"<<endl;
 
          //below we remove the send: portion of the string and send it to server, also set enum to REGULAR
          int c_string_length = client_str.length();
@@ -116,6 +118,26 @@ int main()
 
            close(fd_client_send);
            exit(EXIT_SUCCESS);
+
+         }else{//  time case
+           if(temp_s[0] == c_time[0] && temp_s[1] == c_time[1] && temp_s[2] == c_time[2] &&
+            temp_s[3] == c_time[3] && temp_s[4] == c_time[4]){
+
+              typ = TIME;
+              msg.type = typ;
+              fd_client_send = open(client_send_fifo, O_WRONLY);
+
+              if( write(fd_client_send, &msg, sizeof(msg)) < 0)
+                  fprintf(stderr, "Error\n");
+              close(fd_client_send);
+
+              fd_client_recv = open(client_recv_fifo, O_RDONLY);
+              while(read(fd_client_recv, &buf, MAX_BUF)>0){
+                   cout<<"time = "<<buf<<endl;
+              }
+              close(fd_client_recv);
+          }
+
          }
        }else{
          if(n == 6){
@@ -141,28 +163,6 @@ int main()
    }
  }
 }
-    // strcpy(buf, client_str.c_str());
-    // if( write(fd_server_IN, buf, sizeof(buf)) < 0)
-    //     fprintf(stderr, "Error\n");
-    //
-    //
-    //
-    // close(fd_server_IN);
-    //
-    //
-    //
-    // while(1)
-    // {
-    //     fd_client_IN = open(client_IN_fifo, O_RDONLY);
-    //
-    //     while(read(fd_client_IN, buf, MAX_BUF)>0)
-    //     {
-    //         printf("Received: %s\n", buf);
-    //
-    //     }
-    //
-    //     close(fd_client_IN);
-    // }
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
@@ -34,8 +35,6 @@ typedef struct msg_r {
 //  signal handler
 void handle_sig(int sig){
   client_count--;
-  cout<<"client count decremented"<<endl;
-  cout<<"new client count: "<<client_count<<endl;
 }
 
 int main()
@@ -59,6 +58,10 @@ int main()
   act.sa_handler = &handle_sig;
   sigaction(SIGCHLD, &act, 0);
 
+  //time stuff init
+  time_t rawtime;
+  struct tm * ptm;;
+
     /* open, read, and display the message from the FIFO */
     mkfifo(server_IN_fifo, 0666);
 
@@ -71,7 +74,7 @@ int main()
             clientpid = msg_init.client_pid;
             fork_ret = fork();
             client_count++;
-            cout<<"number of clients: "<<client_count<<endl;
+
         }
         close(fd_server_IN);
 
@@ -99,17 +102,32 @@ int main()
               exit(EXIT_SUCCESS);
           }else{
             if(msg_s.type == STATUS){
-              cout<<"message type status recieved"<<endl;
-              cout<<"hello from server"<<endl;
-
               sprintf(buf, "%d", client_count);
               fd_client_recv = open(client_recv_fifo, O_WRONLY);
-              if( write(fd_client_recv, buf, sizeof(buf)) < 0)
+              if(write(fd_client_recv, buf, sizeof(buf)) < 0)
                 cout<<"ERROR"<<endl;
-
               close(fd_client_recv);
 
+            }else{
+              if(msg_s.type == TIME){
+                time (&rawtime);
+                ptm = gmtime(&rawtime);
+                int hrs, min;
+                hrs = (ptm->tm_hour-4)%24;
+                min = ptm->tm_min;
+                string hrs_s = to_string(hrs);
+                string min_s = to_string(min);
+                string time_s = hrs_s + ":" + min_s;
+                char time_str_c[time_s.length()];
+                strcpy(time_str_c, time_s.c_str());
+                cout<<endl<<"here's the time: "<<hrs_s<<":"<<min_s;
+                sprintf(buf, "%s", time_str_c);
+                fd_client_recv = open(client_recv_fifo, O_WRONLY);
+                if(write(fd_client_recv, buf, sizeof(buf)) < 0)
+                  cout<<"ERROR"<<endl;
+                close(fd_client_recv);
               }
+            }
             }
           }
         }//  end child while
@@ -117,16 +135,12 @@ int main()
 
     }//  end of main while
 
-    // fd_client_IN = open(client_IN_fifo, O_WRONLY);
-    // sprintf(buf, "%d", getpid());
-    // if( write(fd_client_IN, buf, sizeof(buf)) < 0)
-    //     fprintf(stderr, "Error\n");
-    // close(fd_client_IN);
-
-
     /* remove the FIFO */
     //unlink(client_IN_fifo);
     unlink(server_IN_fifo);
+    unlink(client_send_fifo);
+    unlink(client_recv_fifo);
+
 
     return 0;
 }
