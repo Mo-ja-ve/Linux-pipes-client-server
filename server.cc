@@ -111,9 +111,9 @@ int main()
             }else{
               if(msg_s.type == TIME){
                 time (&rawtime);
-                ptm = gmtime(&rawtime);
+                ptm = localtime(&rawtime);
                 int hrs, min;
-                hrs = (ptm->tm_hour-4);
+                hrs = (ptm->tm_hour);
                 min = ptm->tm_min;
                 //cout<<endl<<"HOURS: "<<hrs;
                 string hrs_s = to_string(hrs);
