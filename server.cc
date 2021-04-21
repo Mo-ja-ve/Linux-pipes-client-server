@@ -121,7 +121,7 @@ int main()
                 string time_s = hrs_s + ":" + min_s;
                 char time_str_c[time_s.length()];
                 strcpy(time_str_c, time_s.c_str());
-                cout<<endl<<"here's the time: "<<hrs_s<<":"<<min_s;
+                cout<<"here's the time: "<<hrs_s<<":"<<min_s<<endl;
                 sprintf(buf, "%s", time_str_c);
                 fd_client_recv = open(client_recv_fifo, O_WRONLY);
                 if(write(fd_client_recv, buf, sizeof(buf)) < 0)
