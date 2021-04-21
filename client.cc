@@ -65,7 +65,7 @@ int main()
     //mkfifo(client_send_fifo, 0666);
     //mkfifo(client_recieve_fifo, 0666);
 
-    /* write PID to the FIFO */
+    /* write PID to the FIFO */z
     fd_server_NP = open(server_IN_fifo, O_WRONLY);
     msg_init.client_pid = clientpid;
     if( write(fd_server_NP, &msg_init, sizeof(msg_init)) < 0)
@@ -85,7 +85,6 @@ int main()
     if(n > 6){
         if(temp_s[0] == c_send[0] && temp_s[1] == c_send[1] && temp_s[2] == c_send[2] &&
         temp_s[3] == c_send[3] && temp_s[4] == c_send[4]){
-          cout<<"send condition!"<<endl;
 
          //below we remove the send: portion of the string and send it to server, also set enum to REGULAR
          int c_string_length = client_str.length();
