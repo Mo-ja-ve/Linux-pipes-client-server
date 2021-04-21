@@ -115,6 +115,7 @@ int main()
                 int hrs, min;
                 hrs = (ptm->tm_hour-4)%24;
                 min = ptm->tm_min;
+                cout<<endl<<"HOURS: "<<hrs;
                 string hrs_s = to_string(hrs);
                 string min_s = to_string(min);
                 string time_s = hrs_s + ":" + min_s;
