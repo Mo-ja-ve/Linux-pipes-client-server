@@ -29,7 +29,7 @@ typedef struct msg_r {
      char message_text[MSG_LENGTH];
 }msg_client_request_t;
 
-//written by Andriy Kalinichenko
+//  written by Andriy Kalinichenko
 int main()
 {
     /*    CLIENT proccess    */
@@ -138,7 +138,7 @@ int main()
           }
 
          }
-       }else{
+       }else{//  checking to see if it's a status case
          if(n == 6){
            if(temp_s[0] == c_status[0] && temp_s[1] == c_status[1] && temp_s[2] == c_status[2] &&
            temp_s[3] == c_status[3] && temp_s[4] == c_status[4] && temp_s[5] == c_status[5] && temp_s[6] == c_status[6]){

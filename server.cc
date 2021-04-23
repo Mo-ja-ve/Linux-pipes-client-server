@@ -32,14 +32,16 @@ typedef struct msg_r {
      char message_text[MSG_LENGTH];
 }msg_client_request_t;
 
-//  signal handler
+//  signal handler for decrementing client count
 void handle_sig(int sig){
   client_count--;
 }
 
+//  written by Andriy Kalinichenko
 int main()
 {
   /*    SERVER PROCESS    */
+  // initializing a bunch of stuff which will be used for the server pipes
   int fd_server_IN, fd_client_recv, fd_client_send, msg_size;
   int fork_ret = 1;
   int clientpid;
@@ -53,18 +55,21 @@ int main()
   msg_initial_request_t msg_init;
   msg_client_request_t msg_s;
 
-  //signal handling
+  //  signal handling
   struct sigaction act;
   act.sa_handler = &handle_sig;
   sigaction(SIGCHLD, &act, 0);
 
-  //time stuff init
+  //  time stuff init
   time_t rawtime;
   struct tm * ptm;;
 
     /* open, read, and display the message from the FIFO */
     mkfifo(server_IN_fifo, 0666);
 
+    //  main while loop for server waiting and accepting initial message from client
+    //  once the first connection is received from the client a fork() is called creating
+    //  the child process responsible for handling additional requests from the client
     while(1)
     {
         fd_server_IN = open(server_IN_fifo, O_RDONLY);
@@ -78,8 +83,11 @@ int main()
         }
         close(fd_server_IN);
 
+        //  if this return case is check is zero it's the child server process
+        //  necessary functions are carried out
         if(fork_ret == 0){
           while(1){
+          // lots of stuff to convert between ints, chars, and strings below and throughout the rest of this block
           tostring = to_string(clientpid);
           client_recv_fifo_s = "./" + tostring + "_recieve";
           client_send_fifo_s = "./" + tostring + "_send";
@@ -89,12 +97,15 @@ int main()
           mkfifo(client_send_fifo, 0666);
           mkfifo(client_recv_fifo, 0666);
 
+          //  connection to the pipe is read and additional functions are carred out based
+          //  on the input requests from the client
           fd_client_send = open(client_send_fifo, O_RDONLY);
           while(read(fd_client_send, &msg_s, 104)>0){
             cout<<"message recieved"<<endl;
           }
           close(fd_client_send);
 
+          //  ifs to check the command type sent by the client
           if(msg_s.type == REGULAR){
             cout<<"message: "<<msg_s.message_text<<endl;
           }else{
@@ -115,7 +126,6 @@ int main()
                 int hrs, min;
                 hrs = (ptm->tm_hour);
                 min = ptm->tm_min;
-                //cout<<endl<<"HOURS: "<<hrs;
                 string hrs_s = to_string(hrs);
                 string min_s = to_string(min);
                 string time_s = hrs_s + ":" + min_s;
